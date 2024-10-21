@@ -1,5 +1,3 @@
-// Home.tsx
-
 'use client';
 import React, { useState, useEffect } from 'react';
 import './page.scss';
@@ -11,7 +9,13 @@ export interface ITask {
   completed: boolean;
   task: string;
   description: string;
+  dueDate: string; // ISO date string
+  priority: 'Low' | 'Medium' | 'High';
+  creationDate: string; // ISO date string
 }
+
+type SortCriteria = 'dueDate' | 'priority' | 'creationDate';
+type SortOrder = 'asc' | 'desc';
 
 export default function Home() {
   const [view, setView] = useState<'all' | 'todo' | 'completed'>('all');
@@ -23,20 +27,31 @@ export default function Home() {
       completed: false,
       task: 'Finish Classwork',
       description: 'We need to build a todo list in React.',
+      dueDate: new Date().toISOString().split('T')[0],
+      priority: 'Medium',
+      creationDate: new Date().toISOString(),
     },
     {
       id: uuidv4(),
       completed: false,
       task: 'Graduate UP',
       description: 'I need to pass all classes or my parents will kill me.',
+      dueDate: new Date().toISOString().split('T')[0],
+      priority: 'High',
+      creationDate: new Date().toISOString(),
     },
   ]);
 
-  const [newTask, setNewTask] = useState<Omit<ITask, 'id'>>({
+  const [newTask, setNewTask] = useState<Omit<ITask, 'id' | 'creationDate'>>({
     completed: false,
     task: '',
     description: '',
+    dueDate: new Date().toISOString().split('T')[0],
+    priority: 'Medium',
   });
+
+  const [sortCriteria, setSortCriteria] = useState<SortCriteria>('creationDate');
+  const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
 
   useEffect(() => {
     const storedTheme = localStorage.getItem('theme');
@@ -64,9 +79,13 @@ export default function Home() {
 
   const handleAddTask = () => {
     if (newTask.task.trim() !== '' && newTask.description.trim() !== '') {
-      const taskToAdd: ITask = { ...newTask, id: uuidv4() };
+      const taskToAdd: ITask = {
+        ...newTask,
+        id: uuidv4(),
+        creationDate: new Date().toISOString(),
+      };
       setTasks([...tasks, taskToAdd]);
-      setNewTask({ completed: false, task: '', description: '' });
+      setNewTask({ completed: false, task: '', description: '', dueDate: new Date().toISOString().split('T')[0], priority: 'Medium' });
     } else {
       alert('Please enter both task name and description.');
     }
@@ -84,14 +103,42 @@ export default function Home() {
     setTasks(updatedTasks);
   };
 
-  const handleEditTask = (id: string, updatedTask: string, updatedDescription: string) => {
+  const handleEditTask = (
+      id: string,
+      updatedTask: string,
+      updatedDescription: string,
+      updatedDueDate: string,
+      updatedPriority: 'Low' | 'Medium' | 'High'
+  ) => {
     const updatedTasks = tasks.map((task) =>
-        task.id === id ? { ...task, task: updatedTask, description: updatedDescription } : task
+        task.id === id
+            ? {
+              ...task,
+              task: updatedTask,
+              description: updatedDescription,
+              dueDate: updatedDueDate,
+              priority: updatedPriority,
+            }
+            : task
     );
     setTasks(updatedTasks);
   };
 
-  const filteredTasks = tasks.filter((task) => {
+  const sortedTasks = [...tasks].sort((a, b) => {
+    let compare = 0;
+    if (sortCriteria === 'dueDate' || sortCriteria === 'creationDate') {
+      const dateA = new Date(a[sortCriteria]).getTime();
+      const dateB = new Date(b[sortCriteria]).getTime();
+      compare = dateA - dateB;
+    } else if (sortCriteria === 'priority') {
+      const priorityOrder = { 'High': 3, 'Medium': 2, 'Low': 1 };
+      compare = priorityOrder[a.priority] - priorityOrder[b.priority];
+    }
+
+    return sortOrder === 'asc' ? compare : -compare;
+  });
+
+  const filteredTasks = sortedTasks.filter((task) => {
     if (view === 'all') return true;
     if (view === 'todo') return !task.completed;
     if (view === 'completed') return task.completed;
@@ -130,6 +177,34 @@ export default function Home() {
             </div>
           </div>
 
+          {/* Sorting Controls */}
+          <div className="Home-sortingControls">
+            <label htmlFor="sortCriteria">Sort By:</label>
+            <select
+                id="sortCriteria"
+                value={sortCriteria}
+                onChange={(e) => setSortCriteria(e.target.value as SortCriteria)}
+                className="Home-select"
+                aria-label="Sort Criteria"
+            >
+              <option value="creationDate">Creation Date</option>
+              <option value="dueDate">Due Date</option>
+              <option value="priority">Priority</option>
+            </select>
+
+            <label htmlFor="sortOrder">Order:</label>
+            <select
+                id="sortOrder"
+                value={sortOrder}
+                onChange={(e) => setSortOrder(e.target.value as SortOrder)}
+                className="Home-select"
+                aria-label="Sort Order"
+            >
+              <option value="asc">Ascending</option>
+              <option value="desc">Descending</option>
+            </select>
+          </div>
+
           {/* Task List */}
           <div className="Home-taskList">
             {filteredTasks.length > 0 ? (
@@ -140,6 +215,8 @@ export default function Home() {
                         task={task.task}
                         completed={task.completed}
                         description={task.description}
+                        dueDate={task.dueDate}
+                        priority={task.priority}
                         onStatusToggle={handleToggleTask}
                         onDelete={handleDeleteTask}
                         onEdit={handleEditTask}
@@ -167,11 +244,28 @@ export default function Home() {
                   className="Home-input"
                   aria-label="Task Description"
               />
+              <input
+                  type="date"
+                  value={newTask.dueDate}
+                  onChange={(e) => setNewTask({ ...newTask, dueDate: e.target.value })}
+                  className="Home-input"
+                  aria-label="Due Date"
+              />
+              <select
+                  value={newTask.priority}
+                  onChange={(e) => setNewTask({ ...newTask, priority: e.target.value as 'Low' | 'Medium' | 'High' })}
+                  className="Home-input"
+                  aria-label="Priority"
+              >
+                <option value="Low">Low Priority</option>
+                <option value="Medium">Medium Priority</option>
+                <option value="High">High Priority</option>
+              </select>
             </div>
             <div className="Home-footerButtons">
               <button
                   className="Home-footerBtn cancel"
-                  onClick={() => setNewTask({ completed: false, task: '', description: '' })}
+                  onClick={() => setNewTask({ completed: false, task: '', description: '', dueDate: new Date().toISOString().split('T')[0], priority: 'Medium' })}
                   aria-label="Cancel Adding Task"
               >
                 Cancel

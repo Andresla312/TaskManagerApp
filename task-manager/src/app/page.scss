@@ -1,8 +1,6 @@
-/* page.scss */
-
 :root {
     --primary-color: #0070f3;
-    --primary-color-dark: #005bb5; // Darker version of primary color
+    --primary-color-dark: #005bb5;
     --background-color: #ffffff;
     --text-color: #000000;
     --task-background-color: #f9f9f9;
@@ -15,7 +13,7 @@
 
 [data-theme='dark'] {
     --primary-color: #4caf50;
-    --primary-color-dark: #388e3c; // Darker version for dark mode
+    --primary-color-dark: #388e3c;
     --background-color: #181818;
     --text-color: #f0f0f0;
     --task-background-color: #2c2c2c;
@@ -198,6 +196,34 @@ body {
                     transform: translateY(-2px);
                 }
             }
+        }
+    }
+}
+
+.Home-sortingControls {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 10px 16px;
+    background-color: var(--task-background-color);
+    border-bottom: 1px solid #e0e0e0;
+
+    label {
+        font-weight: bold;
+    }
+
+    .Home-select {
+        padding: 6px 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        background-color: var(--background-color);
+        color: var(--text-color);
+        transition: border-color 0.3s ease, background-color 0.3s ease, color 0.3s ease;
+
+        &:focus {
+            border-color: var(--primary-color);
+            outline: none;
         }
     }
 }

@@ -1,5 +1,3 @@
-// TaskListItem.tsx
-
 import React, { useState } from 'react';
 import './TaskListItem.scss';
 import { FaCheckCircle, FaRegCircle, FaTrash, FaEdit } from 'react-icons/fa';
@@ -9,17 +7,27 @@ export interface ITaskListItemProps {
     completed: boolean;
     task: string;
     description: string;
+    dueDate: string;
+    priority: 'Low' | 'Medium' | 'High';
     onStatusToggle: (id: string) => void;
     onDelete: (id: string) => void;
-    onEdit: (id: string, updatedTask: string, updatedDescription: string) => void;
+    onEdit: (
+        id: string,
+        updatedTask: string,
+        updatedDescription: string,
+        updatedDueDate: string,
+        updatedPriority: 'Low' | 'Medium' | 'High'
+    ) => void;
 }
 
 export default function TaskListItem(props: ITaskListItemProps) {
-    const { id, completed, task, description, onStatusToggle, onDelete, onEdit } = props;
+    const { id, completed, task, description, dueDate, priority, onStatusToggle, onDelete, onEdit } = props;
 
     const [isEditing, setIsEditing] = useState<boolean>(false);
     const [editedTask, setEditedTask] = useState<string>(task);
     const [editedDescription, setEditedDescription] = useState<string>(description);
+    const [editedDueDate, setEditedDueDate] = useState<string>(dueDate);
+    const [editedPriority, setEditedPriority] = useState<'Low' | 'Medium' | 'High'>(priority);
 
     const handleSave = () => {
         // Validate inputs if necessary
@@ -27,13 +35,15 @@ export default function TaskListItem(props: ITaskListItemProps) {
             alert('Task name and description cannot be empty.');
             return;
         }
-        onEdit(id, editedTask, editedDescription);
+        onEdit(id, editedTask, editedDescription, editedDueDate, editedPriority);
         setIsEditing(false);
     };
 
     const handleCancel = () => {
         setEditedTask(task);
         setEditedDescription(description);
+        setEditedDueDate(dueDate);
+        setEditedPriority(priority);
         setIsEditing(false);
     };
 
@@ -60,6 +70,23 @@ export default function TaskListItem(props: ITaskListItemProps) {
                             className="TaskListItem-input"
                             placeholder="Task Description"
                         />
+                        <input
+                            type="date"
+                            value={editedDueDate}
+                            onChange={(e) => setEditedDueDate(e.target.value)}
+                            className="TaskListItem-input"
+                            placeholder="Due Date"
+                        />
+                        <select
+                            value={editedPriority}
+                            onChange={(e) => setEditedPriority(e.target.value as 'Low' | 'Medium' | 'High')}
+                            className="TaskListItem-input"
+                            aria-label="Priority"
+                        >
+                            <option value="Low">Low Priority</option>
+                            <option value="Medium">Medium Priority</option>
+                            <option value="High">High Priority</option>
+                        </select>
                         <div className="TaskListItem-editButtons">
                             <button className="TaskListItem-btn save" onClick={handleSave}>Save</button>
                             <button className="TaskListItem-btn cancel" onClick={handleCancel}>Cancel</button>
@@ -70,6 +97,7 @@ export default function TaskListItem(props: ITaskListItemProps) {
                         <div className="TaskListItem-text">
                             <h1>{task}</h1>
                             <p>{description}</p>
+                            <p className="TaskListItem-meta">Due: {dueDate} | Priority: {priority}</p>
                         </div>
                         <div className="TaskListItem-actions">
                             <FaEdit className="edit-icon" onClick={() => setIsEditing(true)} title="Edit Task" />
