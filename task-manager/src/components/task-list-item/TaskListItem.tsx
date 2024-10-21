@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, KeyboardEvent } from 'react';
 import './TaskListItem.scss';
 import { FaCheckCircle, FaRegCircle, FaTrash, FaEdit } from 'react-icons/fa';
 
@@ -47,6 +47,17 @@ export default function TaskListItem(props: ITaskListItemProps) {
         setIsEditing(false);
     };
 
+    // Keyboard event handler for Edit Task form
+    const handleEditKeyDown = (e: KeyboardEvent<HTMLInputElement | HTMLSelectElement>) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            handleSave();
+        } else if (e.key === 'Escape') {
+            e.preventDefault();
+            handleCancel();
+        }
+    };
+
     return (
         <div className={`TaskListItem-root ${completed ? 'completed' : ''}`}>
             <div className="TaskListItem-content">
@@ -62,6 +73,7 @@ export default function TaskListItem(props: ITaskListItemProps) {
                             onChange={(e) => setEditedTask(e.target.value)}
                             className="TaskListItem-input"
                             placeholder="Task Name"
+                            onKeyDown={handleEditKeyDown} // Added onKeyDown
                         />
                         <input
                             type="text"
@@ -69,6 +81,7 @@ export default function TaskListItem(props: ITaskListItemProps) {
                             onChange={(e) => setEditedDescription(e.target.value)}
                             className="TaskListItem-input"
                             placeholder="Task Description"
+                            onKeyDown={handleEditKeyDown} // Added onKeyDown
                         />
                         <input
                             type="date"
@@ -76,20 +89,26 @@ export default function TaskListItem(props: ITaskListItemProps) {
                             onChange={(e) => setEditedDueDate(e.target.value)}
                             className="TaskListItem-input"
                             placeholder="Due Date"
+                            onKeyDown={handleEditKeyDown} // Added onKeyDown
                         />
                         <select
                             value={editedPriority}
                             onChange={(e) => setEditedPriority(e.target.value as 'Low' | 'Medium' | 'High')}
                             className="TaskListItem-input"
                             aria-label="Priority"
+                            onKeyDown={handleEditKeyDown} // Added onKeyDown
                         >
                             <option value="Low">Low Priority</option>
                             <option value="Medium">Medium Priority</option>
                             <option value="High">High Priority</option>
                         </select>
                         <div className="TaskListItem-editButtons">
-                            <button className="TaskListItem-btn save" onClick={handleSave}>Save</button>
-                            <button className="TaskListItem-btn cancel" onClick={handleCancel}>Cancel</button>
+                            <button className="TaskListItem-btn save" onClick={handleSave}>
+                                Save
+                            </button>
+                            <button className="TaskListItem-btn cancel" onClick={handleCancel}>
+                                Cancel
+                            </button>
                         </div>
                     </div>
                 ) : (
@@ -97,7 +116,9 @@ export default function TaskListItem(props: ITaskListItemProps) {
                         <div className="TaskListItem-text">
                             <h1>{task}</h1>
                             <p>{description}</p>
-                            <p className="TaskListItem-meta">Due: {dueDate} | Priority: {priority}</p>
+                            <p className="TaskListItem-meta">
+                                Due: {dueDate} | Priority: {priority}
+                            </p>
                         </div>
                         <div className="TaskListItem-actions">
                             <FaEdit className="edit-icon" onClick={() => setIsEditing(true)} title="Edit Task" />

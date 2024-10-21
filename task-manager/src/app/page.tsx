@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, KeyboardEvent } from 'react';
 import './page.scss';
 import TaskListItem from '@/components/task-list-item/TaskListItem';
 import { v4 as uuidv4 } from 'uuid';
@@ -85,7 +85,13 @@ export default function Home() {
         creationDate: new Date().toISOString(),
       };
       setTasks([...tasks, taskToAdd]);
-      setNewTask({ completed: false, task: '', description: '', dueDate: new Date().toISOString().split('T')[0], priority: 'Medium' });
+      setNewTask({
+        completed: false,
+        task: '',
+        description: '',
+        dueDate: new Date().toISOString().split('T')[0],
+        priority: 'Medium',
+      });
     } else {
       alert('Please enter both task name and description.');
     }
@@ -131,7 +137,7 @@ export default function Home() {
       const dateB = new Date(b[sortCriteria]).getTime();
       compare = dateA - dateB;
     } else if (sortCriteria === 'priority') {
-      const priorityOrder = { 'High': 3, 'Medium': 2, 'Low': 1 };
+      const priorityOrder = { High: 3, Medium: 2, Low: 1 };
       compare = priorityOrder[a.priority] - priorityOrder[b.priority];
     }
 
@@ -144,6 +150,23 @@ export default function Home() {
     if (view === 'completed') return task.completed;
     return true;
   });
+
+  // Keyboard event handler for Add Task section
+  const handleAddTaskKeyDown = (e: KeyboardEvent<HTMLInputElement | HTMLSelectElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleAddTask();
+    } else if (e.key === 'Escape') {
+      e.preventDefault();
+      setNewTask({
+        completed: false,
+        task: '',
+        description: '',
+        dueDate: new Date().toISOString().split('T')[0],
+        priority: 'Medium',
+      });
+    }
+  };
 
   return (
       <div className="Home-root">
@@ -236,6 +259,7 @@ export default function Home() {
                   placeholder="Task Name"
                   className="Home-input"
                   aria-label="Task Name"
+                  onKeyDown={handleAddTaskKeyDown}
               />
               <input
                   value={newTask.description}
@@ -243,6 +267,7 @@ export default function Home() {
                   placeholder="Task Description"
                   className="Home-input"
                   aria-label="Task Description"
+                  onKeyDown={handleAddTaskKeyDown}
               />
               <input
                   type="date"
@@ -250,12 +275,16 @@ export default function Home() {
                   onChange={(e) => setNewTask({ ...newTask, dueDate: e.target.value })}
                   className="Home-input"
                   aria-label="Due Date"
+                  onKeyDown={handleAddTaskKeyDown}
               />
               <select
                   value={newTask.priority}
-                  onChange={(e) => setNewTask({ ...newTask, priority: e.target.value as 'Low' | 'Medium' | 'High' })}
+                  onChange={(e) =>
+                      setNewTask({ ...newTask, priority: e.target.value as 'Low' | 'Medium' | 'High' })
+                  }
                   className="Home-input"
                   aria-label="Priority"
+                  onKeyDown={handleAddTaskKeyDown}
               >
                 <option value="Low">Low Priority</option>
                 <option value="Medium">Medium Priority</option>
@@ -265,7 +294,15 @@ export default function Home() {
             <div className="Home-footerButtons">
               <button
                   className="Home-footerBtn cancel"
-                  onClick={() => setNewTask({ completed: false, task: '', description: '', dueDate: new Date().toISOString().split('T')[0], priority: 'Medium' })}
+                  onClick={() =>
+                      setNewTask({
+                        completed: false,
+                        task: '',
+                        description: '',
+                        dueDate: new Date().toISOString().split('T')[0],
+                        priority: 'Medium',
+                      })
+                  }
                   aria-label="Cancel Adding Task"
               >
                 Cancel
