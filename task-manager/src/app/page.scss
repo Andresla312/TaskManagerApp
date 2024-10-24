@@ -11,11 +11,13 @@
     --shadow-color: rgba(0, 0, 0, 0.1);
     --hover-shadow-color: rgba(0, 0, 0, 0.2);
     --focus-outline: 2px solid var(--primary-color);
+    --edit-icon-color: #246BCE; //#3498db;
+    --edit-icon-color-dark: #1b4f99;
 }
 
 [data-theme='dark'] {
     --primary-color: #00693E;
-    --primary-color-dark: #74C365;
+    --primary-color-dark: #01a35f; // 74C365
     --background-color: #343434;
     --component-background-color: #1B1B1B;
     --text-color: #F7F7F7;
@@ -25,6 +27,8 @@
     --completed-background-color: #2c2c2c;
     --shadow-color: rgba(0, 0, 0, 0.3);
     --hover-shadow-color: rgba(0, 0, 0, 0.4);
+    --edit-icon-color: #2E8B57;
+    --edit-icon-color-dark: #39ac6b;
 }
 
 body {
@@ -43,6 +47,7 @@ body {
     min-height: 100vh;
     background-color: var(--background-color);
     color: var(--text-color);
+    overflow: hidden;
 }
 
 .Home-container {
@@ -50,6 +55,7 @@ body {
     flex-direction: column;
     width: 90%;
     max-width: 800px;
+    max-height: 90vh;
     background-color: var(--component-background-color);
     border-radius: 15px;
     box-shadow: 0 4px 12px var(--shadow-color);
@@ -151,6 +157,7 @@ body {
     background-color: var(--task-background-color);
     flex-grow: 1;
     overflow-y: auto;
+    max-height: 60vh;
     transition: background-color 0.3s ease;
 
     .TaskListItem-root {
@@ -278,3 +285,52 @@ body {
         }
     }
 }
+
+@media (max-width: 1200px) {
+    .Home-container {
+      width: 95%;
+      max-width: 700px;
+    }
+  
+    .Home-footerInputs {
+      flex-wrap: wrap;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .Home-container {
+      width: 95%;
+      max-width: 600px;
+    }
+  
+    .Home-footerInputs {
+      flex-direction: column;
+      gap: 20px;
+    }
+  
+    .Home-taskList {
+      padding: 20px;
+      max-height: 50vh; 
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .Home-container {
+      width: 100%;
+      max-width: 400px;
+    }
+  
+    .Home-footerInputs {
+      flex-direction: column;
+      gap: 10px;
+    }
+  
+    .Home-header {
+      padding: 12px;
+    }
+  
+    .Home-taskList {
+      padding: 15px;
+      max-height: 40vh; 
+    }
+  }
