@@ -1,5 +1,4 @@
-// src/components/help-modal/HelpModal.tsx
-
+'use client';
 import React from 'react';
 import './HelpModal.scss';
 
@@ -18,7 +17,7 @@ const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
     };
 
     return (
-        <div className="Help-modal" role="dialog" aria-modal="true" aria-labelledby="help-title" onClick={handleBackdropClick}>
+        <div className="Help-modal" role="dialog" onClick={handleBackdropClick}>
             <div className="Help-content">
                 <h2 id="help-title">Keyboard Shortcuts</h2>
                 <ul>

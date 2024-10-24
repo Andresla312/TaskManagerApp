@@ -11,13 +11,13 @@
     --shadow-color: rgba(0, 0, 0, 0.1);
     --hover-shadow-color: rgba(0, 0, 0, 0.2);
     --focus-outline: 2px solid var(--primary-color);
-    --edit-icon-color: #246BCE; //#3498db;
+    --edit-icon-color: #246BCE;
     --edit-icon-color-dark: #1b4f99;
 }
 
 [data-theme='dark'] {
     --primary-color: #00693E;
-    --primary-color-dark: #01a35f; // 74C365
+    --primary-color-dark: #01a35f;
     --background-color: #343434;
     --component-background-color: #1B1B1B;
     --text-color: #F7F7F7;
@@ -72,7 +72,7 @@ body {
     justify-content: flex-end;
     padding: 16px;
     background-color: var(--task-background-color);
-    border-bottom: 1px solid var(--task-background-color); // #e0e0e0; Borde blanco 
+    border-bottom: 1px solid var(--task-background-color);
 
     .Home-themeToggle {
         background: none;
@@ -190,7 +190,7 @@ body {
 .Home-footer {
     padding: 16px;
     background-color: var(--component-background-color);
-    border-top: 1px solid var(--task-background-color); // #e0e0e0;
+    border-top: 1px solid var(--task-background-color);
 
     .Home-footerInputs {
         display: flex;
@@ -246,7 +246,7 @@ body {
             }
 
             &.cancel {
-                background-color: #e74c3c; // Red
+                background-color: #e74c3c;
                 transition: background-color 0.3s ease, transform 0.2s ease;
 
                 &:hover {
@@ -265,7 +265,7 @@ body {
     gap: 10px;
     padding: 10px 16px;
     background-color: var(--task-background-color);
-    border-bottom: 1px solid var(--task-background-color); //#e0e0e0;
+    border-bottom: 1px solid var(--task-background-color);
 
     label {
         font-weight: bold;

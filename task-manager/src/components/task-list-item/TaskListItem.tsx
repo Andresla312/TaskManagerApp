@@ -1,8 +1,9 @@
+'use client';
 import React, { useState, KeyboardEvent, useRef, useEffect } from 'react';
 import './TaskListItem.scss';
 import { FaCheckCircle, FaRegCircle, FaTrash, FaEdit } from 'react-icons/fa';
 
-export interface ITaskListItemProps {
+export interface ITaskProps {
     id: string;
     completed: boolean;
     task: string;
@@ -21,8 +22,24 @@ export interface ITaskListItemProps {
     tabIndex?: number;
 }
 
-export default function TaskListItem(props: ITaskListItemProps) {
-    const { id, completed, task, description, dueDate, priority, onStatusToggle, onDelete, onEdit, tabIndex } = props;
+/**
+ * Represents a single task item in the task list.
+ * @param props - Properties passed to the TaskListItem component.
+ * @returns A JSX element displaying the task item.
+ */
+export default function TaskListItem(props: ITaskProps) {
+    const {
+        id,
+        completed,
+        task,
+        description,
+        dueDate,
+        priority,
+        onStatusToggle,
+        onDelete,
+        onEdit,
+        tabIndex,
+    } = props;
 
     const [isEditing, setIsEditing] = useState<boolean>(false);
     const [editedTask, setEditedTask] = useState<string>(task);
@@ -33,6 +50,9 @@ export default function TaskListItem(props: ITaskListItemProps) {
     // Ref for the task item
     const taskRef = useRef<HTMLDivElement>(null);
 
+    /**
+     * Focuses the first input field when entering edit mode.
+     */
     useEffect(() => {
         if (isEditing && taskRef.current) {
             const firstInput = taskRef.current.querySelector<HTMLInputElement>('input[type="text"]');
@@ -40,8 +60,11 @@ export default function TaskListItem(props: ITaskListItemProps) {
         }
     }, [isEditing]);
 
-    const handleSave = () => {
-        // Validate inputs if necessary
+    /**
+     * Handles saving the edited task.
+     */
+    const save = () => {
+        // Validate inputs
         if (editedTask.trim() === '' || editedDescription.trim() === '') {
             alert('Task name and description cannot be empty.');
             return;
@@ -50,7 +73,10 @@ export default function TaskListItem(props: ITaskListItemProps) {
         setIsEditing(false);
     };
 
-    const handleCancel = () => {
+    /**
+     * Cancels the edit mode and resets the edited fields.
+     */
+    const cancel = () => {
         setEditedTask(task);
         setEditedDescription(description);
         setEditedDueDate(dueDate);
@@ -58,19 +84,27 @@ export default function TaskListItem(props: ITaskListItemProps) {
         setIsEditing(false);
     };
 
-    // Keyboard event handler for Edit Task form
-    const handleEditKeyDown = (e: KeyboardEvent<HTMLInputElement | HTMLSelectElement>) => {
+    /**
+     * Keyboard event handler for the edit form.
+     * @param e - Keyboard event.
+     */
+    const editKeyDown = (
+        e: KeyboardEvent<HTMLInputElement | HTMLSelectElement>
+    ) => {
         if (e.key === 'Enter') {
             e.preventDefault();
-            handleSave();
+            save();
         } else if (e.key === 'Escape') {
             e.preventDefault();
-            handleCancel();
+            cancel();
         }
     };
 
-    // Keyboard event handler for Task Item
-    const handleTaskKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
+    /**
+     * Keyboard event handler for the task item.
+     * @param e - Keyboard event.
+     */
+    const taskKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
         if (isEditing) return; // Ignore if in editing mode
 
         switch (e.key) {
@@ -100,7 +134,9 @@ export default function TaskListItem(props: ITaskListItemProps) {
         }
     };
 
-    // Function to focus the previous task
+    /**
+     * Focuses the previous task in the list.
+     */
     const focusPreviousTask = () => {
         const current = taskRef.current;
         if (current) {
@@ -109,7 +145,9 @@ export default function TaskListItem(props: ITaskListItemProps) {
         }
     };
 
-    // Function to focus the next task
+    /**
+     * Focuses the next task in the list.
+     */
     const focusNextTask = () => {
         const current = taskRef.current;
         if (current) {
@@ -123,19 +161,21 @@ export default function TaskListItem(props: ITaskListItemProps) {
             className={`TaskListItem-root ${completed ? 'completed' : ''}`}
             tabIndex={tabIndex}
             ref={taskRef}
-            onKeyDown={handleTaskKeyDown}
+            onKeyDown={taskKeyDown}
             role="listitem"
-            aria-label={`Task: ${task}`}
         >
             <div className="TaskListItem-content">
                 <div
                     className="TaskListItem-status"
                     onClick={() => onStatusToggle(id)}
-                    aria-label={completed ? 'Mark as Incomplete' : 'Mark as Complete'}
                     role="button"
-                    tabIndex={-1} // Not focusable separately
+                    tabIndex={-1}
                 >
-                    {completed ? <FaCheckCircle className="completed-icon" /> : <FaRegCircle className="pending-icon" />}
+                    {completed ? (
+                        <FaCheckCircle className="completed-icon" />
+                    ) : (
+                        <FaRegCircle className="pending-icon" />
+                    )}
                 </div>
 
                 {isEditing ? (
@@ -146,8 +186,7 @@ export default function TaskListItem(props: ITaskListItemProps) {
                             onChange={(e) => setEditedTask(e.target.value)}
                             className="TaskListItem-input"
                             placeholder="Task Name"
-                            onKeyDown={handleEditKeyDown}
-                            aria-label="Edit Task Name"
+                            onKeyDown={editKeyDown}
                         />
                         <input
                             type="text"
@@ -155,8 +194,7 @@ export default function TaskListItem(props: ITaskListItemProps) {
                             onChange={(e) => setEditedDescription(e.target.value)}
                             className="TaskListItem-input"
                             placeholder="Task Description"
-                            onKeyDown={handleEditKeyDown}
-                            aria-label="Edit Task Description"
+                            onKeyDown={editKeyDown}
                         />
                         <input
                             type="date"
@@ -164,25 +202,31 @@ export default function TaskListItem(props: ITaskListItemProps) {
                             onChange={(e) => setEditedDueDate(e.target.value)}
                             className="TaskListItem-input"
                             placeholder="Due Date"
-                            onKeyDown={handleEditKeyDown}
-                            aria-label="Edit Due Date"
+                            onKeyDown={editKeyDown}
                         />
                         <select
                             value={editedPriority}
-                            onChange={(e) => setEditedPriority(e.target.value as 'Low' | 'Medium' | 'High')}
+                            onChange={(e) =>
+                                setEditedPriority(e.target.value as 'Low' | 'Medium' | 'High')
+                            }
                             className="TaskListItem-input"
-                            aria-label="Edit Priority"
-                            onKeyDown={handleEditKeyDown}
+                            onKeyDown={editKeyDown}
                         >
                             <option value="Low">Low Priority</option>
                             <option value="Medium">Medium Priority</option>
                             <option value="High">High Priority</option>
                         </select>
                         <div className="TaskListItem-editButtons">
-                            <button className="TaskListItem-btn save" onClick={handleSave} aria-label="Save Task">
+                            <button
+                                className="TaskListItem-btn save"
+                                onClick={save}
+                            >
                                 Save
                             </button>
-                            <button className="TaskListItem-btn cancel" onClick={handleCancel} aria-label="Cancel Editing">
+                            <button
+                                className="TaskListItem-btn cancel"
+                                onClick={cancel}
+                            >
                                 Cancel
                             </button>
                         </div>
@@ -202,16 +246,14 @@ export default function TaskListItem(props: ITaskListItemProps) {
                                 onClick={() => setIsEditing(true)}
                                 title="Edit Task"
                                 role="button"
-                                tabIndex={-1} // Not focusable separately
-                                aria-label="Edit Task"
+                                tabIndex={-1}
                             />
                             <FaTrash
                                 className="delete-icon"
                                 onClick={() => onDelete(id)}
                                 title="Delete Task"
                                 role="button"
-                                tabIndex={-1} // Not focusable separately
-                                aria-label="Delete Task"
+                                tabIndex={-1}
                             />
                         </div>
                     </>

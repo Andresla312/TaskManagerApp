@@ -1,5 +1,3 @@
-// src/pages/Page.tsx
-
 'use client';
 import React, { useState, useEffect, KeyboardEvent, useRef } from 'react';
 import './page.scss';
@@ -20,13 +18,13 @@ export interface ITask {
 type SortCriteria = 'dueDate' | 'priority' | 'creationDate';
 type SortOrder = 'asc' | 'desc';
 
-export default function Home() {
+/**
+ * Main component for the task management application.
+ */
+export default function Home(): JSX.Element {
   const [view, setView] = useState<'all' | 'todo' | 'completed'>('all');
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
-
-  const [tasks, setTasks] = useState<ITask[]>([
-
-  ]);
+  const [tasks, setTasks] = useState<ITask[]>([]);
 
   const [newTask, setNewTask] = useState<Omit<ITask, 'id' | 'creationDate'>>({
     completed: false,
@@ -38,12 +36,11 @@ export default function Home() {
 
   const [sortCriteria, setSortCriteria] = useState<SortCriteria>('creationDate');
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
-
   const allTabRef = useRef<HTMLDivElement>(null);
   const todoTabRef = useRef<HTMLDivElement>(null);
   const completedTabRef = useRef<HTMLDivElement>(null);
-
   const [isHelpOpen, setIsHelpOpen] = useState<boolean>(false);
+  const isInitialMount = useRef(true);
 
   useEffect(() => {
     const storedTheme = localStorage.getItem('theme');
@@ -63,7 +60,6 @@ export default function Home() {
         setIsHelpOpen(true);
       }
     };
-
     window.addEventListener('keydown', handleGlobalKeyDown as any);
     return () => {
       window.removeEventListener('keydown', handleGlobalKeyDown as any);
@@ -71,17 +67,27 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    localStorage.setItem('tasks', JSON.stringify(tasks));
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+    } else {
+      localStorage.setItem('tasks', JSON.stringify(tasks));
+    }
   }, [tasks]);
 
-  const toggleTheme = () => {
+  /**
+   * Toggles between light and dark themes.
+   */
+  const changeTheme = () => {
     const newTheme = theme === 'light' ? 'dark' : 'light';
     setTheme(newTheme);
     document.documentElement.setAttribute('data-theme', newTheme);
     localStorage.setItem('theme', newTheme);
   };
 
-  const handleAddTask = () => {
+  /**
+   * Adds a new task to the list.
+   */
+  const addtask = () => {
     if (newTask.task.trim() !== '' && newTask.description.trim() !== '') {
       const taskToAdd: ITask = {
         ...newTask,
@@ -102,19 +108,35 @@ export default function Home() {
     }
   };
 
-  const handleDeleteTask = (id: string) => {
+  /**
+   * Deletes a task by ID.
+   * @param id - The ID of the task to delete.
+   */
+  const deleteTask = (id: string) => {
     const updatedTasks = tasks.filter((task) => task.id !== id);
     setTasks(updatedTasks);
   };
 
-  const handleToggleTask = (id: string) => {
+  /**
+   * Toggles the completion status of a task.
+   * @param id - The ID of the task to toggle.
+   */
+  const toogleTask = (id: string) => {
     const updatedTasks = tasks.map((task) =>
         task.id === id ? { ...task, completed: !task.completed } : task
     );
     setTasks(updatedTasks);
   };
 
-  const handleEditTask = (
+  /**
+   * Edits an existing task.
+   * @param id - The ID of the task to edit.
+   * @param updatedTask - The new task name.
+   * @param updatedDescription - The new description.
+   * @param updatedDueDate - The new due date.
+   * @param updatedPriority - The new priority level.
+   */
+  const editTask = (
       id: string,
       updatedTask: string,
       updatedDescription: string,
@@ -158,10 +180,16 @@ export default function Home() {
 
   const taskNameRef = useRef<HTMLInputElement>(null);
 
-  const handleAddTaskKeyDown = (e: KeyboardEvent<HTMLInputElement | HTMLSelectElement>) => {
+  /**
+   * Handles key events for adding a task.
+   * @param e - The keyboard event.
+   */
+  const handleAddTaskKeyDown = (
+      e: KeyboardEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     if (e.key === 'Enter') {
       e.preventDefault();
-      handleAddTask();
+      addtask();
     } else if (e.key === 'Escape') {
       e.preventDefault();
       setNewTask({
@@ -174,9 +202,15 @@ export default function Home() {
     }
   };
 
-  const handleTabKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
+  /**
+   * Handles keyboard navigation between tabs.
+   * @param e - The keyboard event.
+   */
+  const tabKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
     const tabs = [allTabRef, todoTabRef, completedTabRef];
-    const currentIndex = tabs.findIndex((tab) => tab.current === document.activeElement);
+    const currentIndex = tabs.findIndex(
+        (tab) => tab.current === document.activeElement
+    );
 
     if (e.key === 'ArrowRight') {
       e.preventDefault();
@@ -197,28 +231,17 @@ export default function Home() {
   return (
       <div className="Home-root">
         <div className="Home-container">
-          {/* Theme Toggle */}
           <div className="Home-header">
-            <button
-                onClick={toggleTheme}
-                className="Home-themeToggle"
-
-            >
+            <button onClick={changeTheme} className="Home-themeToggle">
               {theme === 'light' ? '🌙 Dark Mode' : '☀️ Light Mode'}
             </button>
           </div>
 
-          <div
-              className="Home-tabs"
-              role="tablist"
-
-              onKeyDown={handleTabKeyDown}
-          >
+          <div className="Home-tabs" role="tablist" onKeyDown={tabKeyDown}>
             <div
                 ref={allTabRef}
                 role="tab"
                 tabIndex={0}
-
                 className={`Home-tab ${view === 'all' ? 'selected' : ''}`}
                 onClick={() => setView('all')}
             >
@@ -228,7 +251,6 @@ export default function Home() {
                 ref={todoTabRef}
                 role="tab"
                 tabIndex={0}
-
                 className={`Home-tab ${view === 'todo' ? 'selected' : ''}`}
                 onClick={() => setView('todo')}
             >
@@ -238,7 +260,6 @@ export default function Home() {
                 ref={completedTabRef}
                 role="tab"
                 tabIndex={0}
-
                 className={`Home-tab ${view === 'completed' ? 'selected' : ''}`}
                 onClick={() => setView('completed')}
             >
@@ -253,7 +274,6 @@ export default function Home() {
                 value={sortCriteria}
                 onChange={(e) => setSortCriteria(e.target.value as SortCriteria)}
                 className="Home-select"
-
             >
               <option value="creationDate">Creation Date</option>
               <option value="dueDate">Due Date</option>
@@ -266,7 +286,6 @@ export default function Home() {
                 value={sortOrder}
                 onChange={(e) => setSortOrder(e.target.value as SortOrder)}
                 className="Home-select"
-
             >
               <option value="asc">Ascending</option>
               <option value="desc">Descending</option>
@@ -275,7 +294,7 @@ export default function Home() {
 
           <div className="Home-taskList" role="list">
             {filteredTasks.length > 0 ? (
-                filteredTasks.map((task, index) => (
+                filteredTasks.map((task) => (
                     <TaskListItem
                         key={task.id}
                         id={task.id}
@@ -284,9 +303,9 @@ export default function Home() {
                         description={task.description}
                         dueDate={task.dueDate}
                         priority={task.priority}
-                        onStatusToggle={handleToggleTask}
-                        onDelete={handleDeleteTask}
-                        onEdit={handleEditTask}
+                        onStatusToggle={toogleTask}
+                        onDelete={deleteTask}
+                        onEdit={editTask}
                         tabIndex={0}
                     />
                 ))
@@ -300,35 +319,40 @@ export default function Home() {
               <input
                   ref={taskNameRef}
                   value={newTask.task}
-                  onChange={(e) => setNewTask({ ...newTask, task: e.target.value })}
+                  onChange={(e) =>
+                      setNewTask({ ...newTask, task: e.target.value })
+                  }
                   placeholder="Task Name"
                   className="Home-input"
-
                   onKeyDown={handleAddTaskKeyDown}
               />
               <input
                   value={newTask.description}
-                  onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
+                  onChange={(e) =>
+                      setNewTask({ ...newTask, description: e.target.value })
+                  }
                   placeholder="Task Description"
                   className="Home-input"
-
                   onKeyDown={handleAddTaskKeyDown}
               />
               <input
                   type="date"
                   value={newTask.dueDate}
-                  onChange={(e) => setNewTask({ ...newTask, dueDate: e.target.value })}
+                  onChange={(e) =>
+                      setNewTask({ ...newTask, dueDate: e.target.value })
+                  }
                   className="Home-input"
-
                   onKeyDown={handleAddTaskKeyDown}
               />
               <select
                   value={newTask.priority}
                   onChange={(e) =>
-                      setNewTask({ ...newTask, priority: e.target.value as 'Low' | 'Medium' | 'High' })
+                      setNewTask({
+                        ...newTask,
+                        priority: e.target.value as 'Low' | 'Medium' | 'High',
+                      })
                   }
                   className="Home-input"
-
                   onKeyDown={handleAddTaskKeyDown}
               >
                 <option value="Low">Low Priority</option>
@@ -348,11 +372,10 @@ export default function Home() {
                         priority: 'Medium',
                       })
                   }
-
               >
                 Cancel
               </button>
-              <button className="Home-footerBtn add" onClick={handleAddTask} >
+              <button className="Home-footerBtn add" onClick={addtask}>
                 Add Task
               </button>
             </div>
