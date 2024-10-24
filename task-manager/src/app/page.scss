@@ -10,6 +10,7 @@
     --completed-background-color: #E5E4E2;
     --shadow-color: rgba(0, 0, 0, 0.1);
     --hover-shadow-color: rgba(0, 0, 0, 0.2);
+    --focus-outline: 2px solid var(--primary-color);
 }
 
 [data-theme='dark'] {
@@ -77,6 +78,10 @@ body {
         &:hover {
             transform: scale(1.1);
         }
+
+        &:focus {
+            outline: var(--focus-outline);
+        }
     }
 }
 
@@ -95,6 +100,7 @@ body {
         border-radius: 8px;
         font-weight: bold;
         transition: background-color 0.3s, color 0.3s;
+        outline: none;
 
         &:hover {
             color: black;
@@ -104,6 +110,38 @@ body {
         &.selected {
             background-color: var(--primary-color);
             color: #F7F7F7;
+        }
+
+        &:focus {
+            outline: var(--focus-outline);
+        }
+    }
+}
+
+.Home-sortingControls {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 10px 16px;
+    background-color: var(--task-background-color);
+    border-bottom: 1px solid #e0e0e0;
+
+    label {
+        font-weight: bold;
+    }
+
+    .Home-select {
+        padding: 6px 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        background-color: var(--background-color);
+        color: var(--text-color);
+        transition: border-color 0.3s ease, background-color 0.3s ease, color 0.3s ease;
+
+        &:focus {
+            border-color: var(--primary-color);
+            outline: var(--focus-outline);
         }
     }
 }
@@ -123,8 +161,14 @@ body {
         box-shadow: 0px 4px 10px var(--shadow-color);
         transition: box-shadow 0.3s ease, background-color 0.3s ease;
 
-        &:hover {
+        &:hover,
+        &:focus {
             box-shadow: 0px 8px 15px var(--hover-shadow-color);
+            outline: var(--focus-outline);
+        }
+
+        &:focus {
+            outline: var(--focus-outline);
         }
     }
 
@@ -160,7 +204,7 @@ body {
 
             &:focus {
                 border-color: var(--primary-color);
-                outline: none;
+                outline: var(--focus-outline);
             }
 
             &::placeholder {
@@ -188,6 +232,10 @@ body {
             &:hover {
                 background-color: var(--primary-color-dark);
                 transform: translateY(-2px);
+            }
+
+            &:focus {
+                outline: var(--focus-outline);
             }
 
             &.cancel {
