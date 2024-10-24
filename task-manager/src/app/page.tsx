@@ -1,7 +1,10 @@
+// src/pages/Page.tsx
+
 'use client';
-import React, { useState, useEffect, KeyboardEvent } from 'react';
+import React, { useState, useEffect, KeyboardEvent, useRef } from 'react';
 import './page.scss';
 import TaskListItem from '@/components/task-list-item/TaskListItem';
+import HelpModal from '@/components/help-modal/HelpModal';
 import { v4 as uuidv4 } from 'uuid';
 
 export interface ITask {
@@ -9,9 +12,9 @@ export interface ITask {
   completed: boolean;
   task: string;
   description: string;
-  dueDate: string; // ISO date string
+  dueDate: string;
   priority: 'Low' | 'Medium' | 'High';
-  creationDate: string; // ISO date string
+  creationDate: string;
 }
 
 type SortCriteria = 'dueDate' | 'priority' | 'creationDate';
@@ -22,24 +25,7 @@ export default function Home() {
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
 
   const [tasks, setTasks] = useState<ITask[]>([
-    {
-      id: uuidv4(),
-      completed: false,
-      task: 'Finish Classwork',
-      description: 'We need to build a todo list in React.',
-      dueDate: new Date().toISOString().split('T')[0],
-      priority: 'Medium',
-      creationDate: new Date().toISOString(),
-    },
-    {
-      id: uuidv4(),
-      completed: false,
-      task: 'Graduate UP',
-      description: 'I need to pass all classes or my parents will kill me.',
-      dueDate: new Date().toISOString().split('T')[0],
-      priority: 'High',
-      creationDate: new Date().toISOString(),
-    },
+
   ]);
 
   const [newTask, setNewTask] = useState<Omit<ITask, 'id' | 'creationDate'>>({
@@ -53,6 +39,12 @@ export default function Home() {
   const [sortCriteria, setSortCriteria] = useState<SortCriteria>('creationDate');
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
 
+  const allTabRef = useRef<HTMLDivElement>(null);
+  const todoTabRef = useRef<HTMLDivElement>(null);
+  const completedTabRef = useRef<HTMLDivElement>(null);
+
+  const [isHelpOpen, setIsHelpOpen] = useState<boolean>(false);
+
   useEffect(() => {
     const storedTheme = localStorage.getItem('theme');
     if (storedTheme) {
@@ -64,6 +56,18 @@ export default function Home() {
     if (storedTasks) {
       setTasks(JSON.parse(storedTasks));
     }
+
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      if (e.key === '?') {
+        e.preventDefault();
+        setIsHelpOpen(true);
+      }
+    };
+
+    window.addEventListener('keydown', handleGlobalKeyDown as any);
+    return () => {
+      window.removeEventListener('keydown', handleGlobalKeyDown as any);
+    };
   }, []);
 
   useEffect(() => {
@@ -92,6 +96,7 @@ export default function Home() {
         dueDate: new Date().toISOString().split('T')[0],
         priority: 'Medium',
       });
+      taskNameRef.current?.focus();
     } else {
       alert('Please enter both task name and description.');
     }
@@ -151,7 +156,8 @@ export default function Home() {
     return true;
   });
 
-  // Keyboard event handler for Add Task section
+  const taskNameRef = useRef<HTMLInputElement>(null);
+
   const handleAddTaskKeyDown = (e: KeyboardEvent<HTMLInputElement | HTMLSelectElement>) => {
     if (e.key === 'Enter') {
       e.preventDefault();
@@ -168,39 +174,78 @@ export default function Home() {
     }
   };
 
+  const handleTabKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
+    const tabs = [allTabRef, todoTabRef, completedTabRef];
+    const currentIndex = tabs.findIndex((tab) => tab.current === document.activeElement);
+
+    if (e.key === 'ArrowRight') {
+      e.preventDefault();
+      const nextIndex = (currentIndex + 1) % tabs.length;
+      tabs[nextIndex].current?.focus();
+    } else if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      const prevIndex = (currentIndex - 1 + tabs.length) % tabs.length;
+      tabs[prevIndex].current?.focus();
+    } else if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      if (currentIndex === 0) setView('all');
+      if (currentIndex === 1) setView('todo');
+      if (currentIndex === 2) setView('completed');
+    }
+  };
+
   return (
       <div className="Home-root">
         <div className="Home-container">
           {/* Theme Toggle */}
           <div className="Home-header">
-            <button onClick={toggleTheme} className="Home-themeToggle" aria-label="Toggle Theme">
+            <button
+                onClick={toggleTheme}
+                className="Home-themeToggle"
+
+            >
               {theme === 'light' ? '🌙 Dark Mode' : '☀️ Light Mode'}
             </button>
           </div>
 
-          {/* Tab Selector */}
-          <div className="Home-tabs">
+          <div
+              className="Home-tabs"
+              role="tablist"
+
+              onKeyDown={handleTabKeyDown}
+          >
             <div
-                onClick={() => setView('all')}
+                ref={allTabRef}
+                role="tab"
+                tabIndex={0}
+
                 className={`Home-tab ${view === 'all' ? 'selected' : ''}`}
+                onClick={() => setView('all')}
             >
               All
             </div>
             <div
-                onClick={() => setView('todo')}
+                ref={todoTabRef}
+                role="tab"
+                tabIndex={0}
+
                 className={`Home-tab ${view === 'todo' ? 'selected' : ''}`}
+                onClick={() => setView('todo')}
             >
               To Do
             </div>
             <div
-                onClick={() => setView('completed')}
+                ref={completedTabRef}
+                role="tab"
+                tabIndex={0}
+
                 className={`Home-tab ${view === 'completed' ? 'selected' : ''}`}
+                onClick={() => setView('completed')}
             >
               Completed
             </div>
           </div>
 
-          {/* Sorting Controls */}
           <div className="Home-sortingControls">
             <label htmlFor="sortCriteria">Sort By:</label>
             <select
@@ -208,7 +253,7 @@ export default function Home() {
                 value={sortCriteria}
                 onChange={(e) => setSortCriteria(e.target.value as SortCriteria)}
                 className="Home-select"
-                aria-label="Sort Criteria"
+
             >
               <option value="creationDate">Creation Date</option>
               <option value="dueDate">Due Date</option>
@@ -221,17 +266,16 @@ export default function Home() {
                 value={sortOrder}
                 onChange={(e) => setSortOrder(e.target.value as SortOrder)}
                 className="Home-select"
-                aria-label="Sort Order"
+
             >
               <option value="asc">Ascending</option>
               <option value="desc">Descending</option>
             </select>
           </div>
 
-          {/* Task List */}
-          <div className="Home-taskList">
+          <div className="Home-taskList" role="list">
             {filteredTasks.length > 0 ? (
-                filteredTasks.map((task) => (
+                filteredTasks.map((task, index) => (
                     <TaskListItem
                         key={task.id}
                         id={task.id}
@@ -243,6 +287,7 @@ export default function Home() {
                         onStatusToggle={handleToggleTask}
                         onDelete={handleDeleteTask}
                         onEdit={handleEditTask}
+                        tabIndex={0}
                     />
                 ))
             ) : (
@@ -250,15 +295,15 @@ export default function Home() {
             )}
           </div>
 
-          {/* Footer / Add Task */}
           <div className="Home-footer">
             <div className="Home-footerInputs">
               <input
+                  ref={taskNameRef}
                   value={newTask.task}
                   onChange={(e) => setNewTask({ ...newTask, task: e.target.value })}
                   placeholder="Task Name"
                   className="Home-input"
-                  aria-label="Task Name"
+
                   onKeyDown={handleAddTaskKeyDown}
               />
               <input
@@ -266,7 +311,7 @@ export default function Home() {
                   onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
                   placeholder="Task Description"
                   className="Home-input"
-                  aria-label="Task Description"
+
                   onKeyDown={handleAddTaskKeyDown}
               />
               <input
@@ -274,7 +319,7 @@ export default function Home() {
                   value={newTask.dueDate}
                   onChange={(e) => setNewTask({ ...newTask, dueDate: e.target.value })}
                   className="Home-input"
-                  aria-label="Due Date"
+
                   onKeyDown={handleAddTaskKeyDown}
               />
               <select
@@ -283,7 +328,7 @@ export default function Home() {
                       setNewTask({ ...newTask, priority: e.target.value as 'Low' | 'Medium' | 'High' })
                   }
                   className="Home-input"
-                  aria-label="Priority"
+
                   onKeyDown={handleAddTaskKeyDown}
               >
                 <option value="Low">Low Priority</option>
@@ -303,15 +348,17 @@ export default function Home() {
                         priority: 'Medium',
                       })
                   }
-                  aria-label="Cancel Adding Task"
+
               >
                 Cancel
               </button>
-              <button className="Home-footerBtn add" onClick={handleAddTask} aria-label="Add Task">
+              <button className="Home-footerBtn add" onClick={handleAddTask} >
                 Add Task
               </button>
             </div>
           </div>
+
+          <HelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
         </div>
       </div>
   );
